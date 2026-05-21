@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: learn-spring-ai
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        options:
+          model: qwen2.5-coder:3b
+      embedding:
+        options:
+          model: nomic-embed-text
+    #    openai:
+    #      api-key: ${OPENAI_API_KEY}
+    #      chat:
+    #        options:
+    #          model: gpt-4o-mini
+    #          temperature: 0.9
+    #      embedding:
+    #        options:
+    #          model: text-embedding-3-small
+
+    vectorstore:
+      pgvector:
+        initialize-schema: true
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/pgvector-test
+    username: postgres
+    password: root
+    driver-class-name: org.postgresql.Driver
+
+#logging:
+#  level:
+#    org.springframework.ai.chat.client: DEBUG
