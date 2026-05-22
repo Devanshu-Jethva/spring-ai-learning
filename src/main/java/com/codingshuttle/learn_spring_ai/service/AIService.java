@@ -48,8 +48,7 @@ public class AIService {
                 .build());
     }
 
-
-    public String getJoke(String topic) {
+    public Joke getJoke(String topic) {
 
         String systemPrompt = """
                 You are a sarcastic joker, you make poetic jokes in 4 lines.
@@ -60,7 +59,7 @@ public class AIService {
         PromptTemplate promptTemplate = new PromptTemplate(systemPrompt);
         String renderedText = promptTemplate.render(Map.of("topic", topic));
 
-        var response =  chatClient.prompt()
+        var response = chatClient.prompt()
                 .user(renderedText)
                 .advisors(
                         new SimpleLoggerAdvisor()
@@ -68,6 +67,6 @@ public class AIService {
                 .call()
                 .entity(Joke.class);
 
-        return response.text();
+        return response;
     }
 }

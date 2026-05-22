@@ -32,10 +32,9 @@ public class AIServiceTests {
 
     @Test
     public void testSimilaritySearch() {
-        var res = aiService.similaritySearch("movies of different genre");
+        var res = aiService.similaritySearch("name of prime minister of india");
         for (var doc : res) {
             System.out.println(doc);
         }
-
     }
 }

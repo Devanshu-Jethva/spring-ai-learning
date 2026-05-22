@@ -25,7 +25,7 @@ spring:
         initialize-schema: true
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/pgvector-test
+    url: jdbc:postgresql://localhost:5431/pgvector-test
     username: postgres
     password: root
     driver-class-name: org.postgresql.Driver
