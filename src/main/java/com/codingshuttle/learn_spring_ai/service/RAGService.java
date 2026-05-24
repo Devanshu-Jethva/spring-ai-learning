@@ -1,8 +1,13 @@
 package com.codingshuttle.learn_spring_ai.service;
 
+import com.codingshuttle.learn_spring_ai.advisor.TokenUsageAdvisor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.SafeGuardAdvisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.VectorStoreChatMemoryAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.reader.pdf.PagePdfDocumentReader;
@@ -23,6 +28,7 @@ public class RAGService {
 
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
+    private final ChatMemory chatMemory;
 
     @Value("classpath:faq.pdf")
     Resource faqPdfResource;
@@ -50,6 +56,43 @@ public class RAGService {
                         Map.of("topic", "chat")
                 )
         );
+    }
+
+    public String askAIWithAdvisors(String prompt, String userId) {
+        return chatClient.prompt()
+                .system("""
+                        You are an AI assistant called Cody.
+                        Greet users with your Name (Cody) and the user name if you know their name.
+                        Answer in a friendly, conversational tone.
+                        """)
+                .user(prompt)
+                .advisors(
+                        new SafeGuardAdvisor(List.of("porn", "sex", "nfsw", "hate", "violence")),
+
+                        new TokenUsageAdvisor(),
+
+                        // MessageChatMemoryAdvisor -> for short term memory
+                        MessageChatMemoryAdvisor.builder(chatMemory)
+                                .build(),
+
+                        // VectorStoreChatMemoryAdvisor -> for long term memory
+                        VectorStoreChatMemoryAdvisor.builder(vectorStore)
+                                .defaultTopK(4)
+                                .build(),
+
+                        // to give only fixed context that model has to answer from this fixed context only for that below advisor is used
+                        QuestionAnswerAdvisor.builder(vectorStore)
+                                .searchRequest(SearchRequest.builder()
+                                        .filterExpression("file_name == 'faq.pdf'")
+                                        .topK(4)
+                                        .build())
+                                .build()
+                )
+                .advisors(advisor ->
+                        advisor.param(ChatMemory.CONVERSATION_ID, userId)
+                )
+                .call()
+                .content();
     }
 
     public void ingestPdfToVectorStore() {
@@ -374,7 +417,7 @@ public class RAGService {
         return chatClient.prompt()
                 .system(stuffedPrompt)
                 .user(prompt)
-                .advisors(new SimpleLoggerAdvisor())
+                .advisors()
                 .call()
                 .content();
     }

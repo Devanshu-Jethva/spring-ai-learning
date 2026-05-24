@@ -23,6 +23,12 @@ spring:
     vectorstore:
       pgvector:
         initialize-schema: true
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: always
+            table-name: chat_memory
 
   datasource:
     url: jdbc:postgresql://localhost:5431/pgvector-test
@@ -30,6 +36,6 @@ spring:
     password: root
     driver-class-name: org.postgresql.Driver
 
-#logging:
-#  level:
-#    org.springframework.ai.chat.client: DEBUG
+logging:
+  level:
+    org.springframework.ai.chat.client: DEBUG
